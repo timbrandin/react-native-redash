@@ -34,7 +34,11 @@ type TransformName =
   | "scaleX"
   | "scaleY"
   | "rotateZ"
-  | "rotate";
+  | "rotate"
+  | "perspective"
+  | "rotateX"
+  | "rotateY"
+  | "rotateZ";
 type Transformations = { [Name in TransformName]: Animated.Adaptable<number> };
 export type Transforms = (
   | Pick<Transformations, "translateX">
@@ -42,6 +46,9 @@ export type Transforms = (
   | Pick<Transformations, "scale">
   | Pick<Transformations, "scaleX">
   | Pick<Transformations, "scaleY">
+  | Pick<Transformations, "perspective">
+  | Pick<Transformations, "rotateX">
+  | Pick<Transformations, "rotateY">
   | Pick<Transformations, "rotateZ">
   | Pick<Transformations, "rotate">
 )[];
@@ -92,7 +99,13 @@ const scaleYMatrix = (s: Animated.Adaptable<number>): Matrix4 => [
   [0, 0, 0, 1],
 ];
 
-/*
+const perspectiveMatrix = (p: Animated.Adaptable<number>): Matrix4 => [
+  [1, 0, 0, 0],
+  [0, 1, 0, 0],
+  [0, 0, 1, multiply(-1, p)],
+  [0, 0, 0, 1],
+];
+
 const rotateXMatrix = (r: Animated.Adaptable<number>): Matrix4 => [
   [1, 0, 0, 0],
   [0, cos(r), multiply(-1, sin(r)), 0],
@@ -106,7 +119,6 @@ const rotateYMatrix = (r: Animated.Adaptable<number>): Matrix4 => [
   [multiply(-1, sin(r)), 0, cos(r), 0],
   [0, 0, 0, 1],
 ];
-*/
 
 const rotateZMatrix = (r: Animated.Adaptable<number>): Matrix4 => [
   [cos(r), multiply(-1, sin(r)), 0, 0],
@@ -176,6 +188,15 @@ export const accumulatedTransform = (transforms: Transforms) => {
     }
     if (key === "scaleY") {
       return multiply4(acc, scaleYMatrix(value));
+    }
+    if (key === "rotateX") {
+      return multiply4(acc, rotateXMatrix(value));
+    }
+    if (key === "rotateY") {
+      return multiply4(acc, rotateYMatrix(value));
+    }
+    if (key === "perspective") {
+      return multiply4(acc, perspectiveMatrix(value));
     }
     if (key === "rotate" || key === "rotateZ") {
       return multiply4(acc, rotateZMatrix(value));
